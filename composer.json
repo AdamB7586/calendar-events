@@ -1,0 +1,29 @@
+{
+    "name": "adamb/calendar-events",
+    "description": "A the functionality to add/edit/remove evenst to the calendar system",
+    "type": "library",
+    "require": {
+        "adamb/database": "^1.2",
+        "adamb/instpupils": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Binnersley",
+            "email": "abinnersley@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Calendar\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Calendar\\Tests\\": "tests/"
+        }
+    }
+}
