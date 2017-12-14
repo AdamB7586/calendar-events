@@ -15,6 +15,7 @@ class Calendar extends Events{
      * @return string Returns a select menu for the given values
      */
     public function hoursDropdown($name, $selected, $hours = 24, $start = 0){
+        $options = '';
         for($i = $start; $i <= $hours; $i++){
             $value = str_pad($i, 2, '0', STR_PAD_LEFT);
             if($selected == $value){$select = ' selected="selected"';}else{$select = '';}
@@ -30,6 +31,7 @@ class Calendar extends Events{
      * @return string The select menu will be returned as a string
      */
     public function minutesDropdown($name, $selected){
+        $options = '';
         foreach($this->minutes as $value){
             if($selected == $value){$select = ' selected="selected"';}else{$select = '';}
             $options.= '<option value="'.$value.'"'.$select.'>'.$value.'</option>';
