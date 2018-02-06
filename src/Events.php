@@ -6,11 +6,28 @@ use PupilManagement\Pupils;
 
 class Events extends Pupils{
     
+    /**
+     * Events to add for standard instructors
+     * @var array 
+     */
     public $events = array('Driving Lesson', 'Theory Test', 'Driving Test', 'Other', 'Draft/Provisional Booking', 'Home Visit', 'Cancellation');
+    
+    /**
+     * Extra events to add for those instructors who are also tutors
+     * @var array
+     */
     public $tutorevents = array('Part 2 Training', 'Part 3 Training', 'ORDIT Training');
     
+    /**
+     * The database table where to store the events
+     * @var string
+     */
     protected $calendarTable = 'lessons_calendar';
     
+    /**
+     * The list of colours to display the events along with the font colours if it differs from white
+     * @var array
+     */
     protected $colors = array(
         1 => array('background' => '#058dc7'/* Blue */),
         2 => array('background' => '#77ab13'/* Green */),
@@ -63,14 +80,33 @@ class Events extends Pupils{
         return $this->getEvents($pupil, 'pupil');
     }
 
-    public function addLessonEvent($fino, $pupilID, $event, $startDate, $type){
-        $dates = $this->getEventStartEndDates($date, $start_hour, $start_min, $length_hour, $length_min);
+    /**
+     * Add a lesson event to the database
+     * @param int $fino This should be the instructors unique ID number
+     * @param int $pupilID This should be the pupils unique ID number
+     * @param string $event This needs to be the events name/description
+     * @param array $date This should be an array containing the event information 
+     * @param int $type The type of event that is being added
+     * @return boolean If the event has been successfully added will return true else return false
+     */
+    public function addLessonEvent($fino, $pupilID, $event, $date, $type){
+        $dates = $this->getEventStartEndDates($date['date'], $date['start_hour'], $date['start_min'], $date['length_hour'], $$date['length_min']);
         return $this->db->insert($this->getEventsTable(), array('fino' => $fino, 'pupil' => $pupilID, 'event' => $event, 'start' => $dates['startdate'], 'end' => $dates['enddate'], 'type' => $type));
     }
     
-    public function updateLessonEvent($fino, $eventID, $pupil, $event, $start, $end, $type){
-        $dates = $this->getEventStartEndDates($date, $start_hour, $start_min, $length_hour, $length_min);
-        return $this->db->update($this->getEventsTable(), array('pupil' => $pupil, 'event' => $event, 'start' => $dates['startdate'], 'end' => $dates['enddate'], 'type' => $type), array('id' => $eventID));
+    /**
+     * Updates a given events information in the database
+     * @param int $fino This should be the instructors unique ID number
+     * @param int $eventID This should be the unique event ID that is being updated
+     * @param int $pupil This should be the pupils unique ID number
+     * @param string $event This needs to be the events name/description
+     * @param array $date This should be an array containing the event information 
+     * @param int $type The type of event that is being added
+     * @return boolean If the event has been successfully updated will return true else return false
+     */
+    public function updateLessonEvent($fino, $eventID, $pupil, $event, $date, $type){
+        $dates = $this->getEventStartEndDates($date['date'], $date['start_hour'], $date['start_min'], $date['length_hour'], $$date['length_min']);
+        return $this->db->update($this->getEventsTable(), array('pupil' => $pupil, 'event' => $event, 'start' => $dates['startdate'], 'end' => $dates['enddate'], 'type' => $type), array('id' => $eventID, 'fino' => $fino));
     }
     
     /**
@@ -104,11 +140,11 @@ class Events extends Pupils{
     }
     
     /**
-     * 
-     * @param int $fino
-     * @param type $pupil
-     * @param type $date
-     * @return type
+     * Returns a users/instructors events for the given date if given else will return the current days events
+     * @param int $fino This should be the instructors unique franchise number 
+     * @param int $pupil 
+     * @param string $date If you want a sets days events set this to be Y-m-d format of date
+     * @return array|false If any events exist they will be returned as an array else will return false if none exist
      */
     public function getDaysEvents($fino, $pupil = 0, $date = ''){
         if(empty($date)){$date = date('Y-m-d');}
@@ -116,19 +152,30 @@ class Events extends Pupils{
     }
     
     
+    /**
+     * Returns an array of events based on the parameters given
+     * @param int $fino This should be the instructors unique fino (set to 0 if you don't want to search by this field)
+     * @param int $id This should be the event ID (set to 0 if you don't want to search by this field)
+     * @param string $startdate The start date/time of the events you are retrieving
+     * @param string $enddate The end date/time of the events you are retrieving
+     * @param int $type The type ID of events that you are searching for
+     * @param int $pupil This should be the pupils unique ID (set to 0 if you don't want to search by this field)
+     * @param string $order Set to 'ASC' or 'DESC' to change the vent order
+     * @return array If any events exist will return an array containing the event details else will return false
+     */
     public function getLessonEvents($fino = 0, $id = 0, $startdate = '', $enddate = '', $type = 0, $pupil = 0, $order = 'ASC'){
-        if(!empty($fino)){$where['fino'] = $fino;}
+        if(!empty($fino) && is_numeric($fino)){$where['fino'] = intval($fino);}
         if(!empty($startdate)){$where['start'] = $startdate;}
         if(!empty($enddate)){$where['end'] = $enddate;}
-        if($id != 0){$where['id'] = $id; $limit = 1;}
-        if($pupil != 0){$where['pupil'] = $pupil;}
-        if($type != 0){$where['type'] = $type;}
+        if($id != 0 && is_numeric($id)){$where['id'] = intval($id); $limit = 1;}
+        if($pupil != 0 && is_numeric($pupil)){$where['pupil'] = intval($pupil);}
+        if($type != 0 && is_numeric($type)){$where['type'] = intval($type);}
         
         $events = $this->db->selectAll($this->getEventsTable(), $where, '*', array('start' => $order), intval($limit));
         if($limit == 1){
             $events['typeName'] = $this->getEventType($events['type']);
         }
-        else{
+        elseif(is_array($events)){
             foreach($events as $i => $event){
                 $events[$i]['typeName'] = $this->getEventType($event['type']);
             }
@@ -138,12 +185,12 @@ class Events extends Pupils{
     
     /**
      * Returns the start and end dates formatted for suitably for the datetime field in the database
-     * @param date $date
-     * @param int $start_hour
-     * @param int $start_min
-     * @param int $length_hour
-     * @param int $length_min
-     * @return array
+     * @param date $date |This should be the date when the event is to start
+     * @param int $start_hour The hour that the events starts (24 hour format)
+     * @param int $start_min The minute that the event starts
+     * @param int $length_hour The length (hours) of the event
+     * @param int $length_min The length (minutes) of the event
+     * @return array Both the start and end date/times will be returned as long as all variables are valid
      */
     protected function getEventStartEndDates($date, $start_hour, $start_min, $length_hour, $length_min){
         $eventTimes = array();

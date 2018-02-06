@@ -4,6 +4,11 @@ namespace Calendar;
 
 class Export extends Events{
     
+    /**
+     * Returns a JSON encode string with a list of events
+     * @param array $events This should be an array of events
+     * @param boolean $instructor If the current user is an instructor set to true else set to false (default = false)
+     */
     public function getFullCalenendarJSON($events, $instructor = false){
         header("Content-type: text/javascript");
         $array = array();
@@ -22,47 +27,52 @@ class Export extends Events{
         echo(json_encode($array));
     }
     
-    public function csvExport($userID, $type){
+    /**
+     * Produces a CSV export feature for calendar events
+     * @param int $userID This should be the users unique ID
+     * @param string $type The type of user you are retrieving the events for
+     * @param string $exportName The name that you want to give to the file you are exporting
+     */
+    public function csvExport($userID, $type, $exportName = 'LDC_Calendar_Export'){
         header("Content-type: text/csv");
-        header('Content-disposition: attachment; filename=LDC_Calendar_Export.csv');
+        header('Content-disposition: attachment; filename='.$exportName.'.csv');
         
-        $data = "Subject, Start Date, Start Time, End Date, End Time, All Day Event, Description, Location, Private\r\n";
+        $data = '';
         foreach($this->getEvents($userID, $type) as $event){
-            $data.= $event['event'].','.date('d/m/y', strtotime($event['start'])).','.date('H:i:s', strtotime($event['start'])).','.date('d/m/y', strtotime($event['end'])).','.date('H:i:s', strtotime($event['end'])).",False,".$this->getEventType(($event['type'] - 1)).", ,True\r\n";
+            $data.= strintf($event['event'], date('d/m/y', strtotime($event['start'])), date('H:i:s', strtotime($event['start'])), date('d/m/y', strtotime($event['end'])), date('H:i:s', strtotime($event['end'])), $this->getEventType(($event['type'] - 1)));
         }
-        echo($data);
+        printr(file_get_contents('exports\csv_export.txt'), $data);
     }
     
-    public function iCalExport($userID, $type){
+    /**
+     * Produces a iCal export feature for calendar events (iOS devices)
+     * @param int $userID This should be the users unique ID
+     * @param string $type The type of user you are retrieving the events for
+     * @param string $exportName The name that you want to give to the file you are exporting
+     */
+    public function iCalExport($userID, $type, $exportName = 'LDC_Calendar_Export'){
         header("Content-type: text/calendar");
-        header('Content-disposition: attachment; filename=LDC_Calendar_Export.ics');
-        $data = "BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//LDC/StudentPortal//NONSGML v1.0//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-PUBLISHED-TTL:PT15M
-X-WR-TIMEZONE:Europe/London
-";
+        header('Content-disposition: attachment; filename='.$exportName.'.ics');
+        $data = '';
         foreach($this->getEvents($userID, $type) as $event){
             $data.= $this->iCalEvent($event);
         }
-        $data.= "END:VCALENDAR";
-        echo($data);
+        printf(file_get_contents('exports\ical_export.txt'), 'Europe/London', $data);
     }
     
+    /**
+     * Returns a single formated event in iCal format
+     * @param array $event This should be a single events details
+     * @return string This will be a formatted event in iCal format
+     */
     private function iCalEvent($event){
-        return "BEGIN:VEVENT
-DTSTART:".date('Ymd\THis', strtotime($event['start']))."
-DTEND:".date('Ymd\THis', strtotime($event['end']))."
-DTSTAMP:".date('Ymd\THis', strtotime($event['start']))."
-DESCRIPTION:".$this->getEventType(($event['type'] - 1))."
-STATUS:CONFIRMED
-SUMMARY:".$event['event']."
-TRANSP:OPAQUE
-SEQUENCE:0
-UID:LDC".md5($event['id'].$event['last_updated'])."
-END:VEVENT
-";
+        return sprintf(
+            file_get_contents('exports\ical_event.txt'),
+            date('Ymd\THis', strtotime($event['start'])),
+            date('Ymd\THis', strtotime($event['end'])),
+            $this->getEventType(($event['type'] - 1)),
+            $event['event'],
+            "LDC".md5($event['id'].$event['last_updated'])
+        );
     }
 }
