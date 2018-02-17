@@ -12,7 +12,7 @@ class CalendarTest extends TestCase{
     protected $calendar;
     
     public function setUp() {
-        $this->dbc = new Database('localhost', 'username', 'password', 'calendar_db', false, false, false, 'sqlite');
+        $this->dbc = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
         $this->calendar = new Calendar($this->dbc);
     }
     
