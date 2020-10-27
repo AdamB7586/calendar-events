@@ -6,23 +6,34 @@ use PHPUnit\Framework\TestCase;
 use Calendar\Calendar;
 use DBAL\Database;
 
-class CalendarTest extends TestCase{
+class CalendarTest extends TestCase
+{
     
-    protected $dbc;
+    protected $db;
     protected $calendar;
     
-    public function setUp() {
-        $this->dbc = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
-        $this->calendar = new Calendar($this->dbc);
+    public function setUp(): void
+    {
+        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
+        $this->calendar = new Calendar($this->db);
     }
     
-    public function tearDown() {
-        unset($this->dbc);
+    public function tearDown(): void
+    {
+        unset($this->db);
         unset($this->calendar);
     }
     
-    public function testExample(){
-        $this->markTestIncomplete('This test has not yet been implemented');
+    /**
+     * @covers Calendar\Calendar::hoursDropdown
+     * @covers Calendar\Calendar::minutesDropdown
+     */
+    public function testExample()
+    {
+        $hoursDD = $this->calendar->hoursDropdown('hours', 16, 24, 6);
+        $this->assertStringStartsWith('<select', $hoursDD);
+        
+        $minutesDD = $this->calendar->minutesDropdown('minutes', 15);
+        $this->assertStringStartsWith('<select', $minutesDD);
     }
-    
 }

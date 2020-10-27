@@ -6,23 +6,26 @@ use PHPUnit\Framework\TestCase;
 use Calendar\Events;
 use DBAL\Database;
 
-class EventsTest extends TestCase{
+class EventsTest extends TestCase
+{
     
-    protected $dbc;
+    protected $db;
     protected $events;
     
-    public function setUp() {
-        $this->dbc = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
-        $this->events = new Events($this->dbc);
+    public function setUp(): void
+    {
+        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
+        $this->events = new Events($this->db);
     }
     
-    public function tearDown() {
-        unset($this->dbc);
+    public function tearDown(): void
+    {
+        unset($this->db);
         unset($this->events);
     }
     
-    public function testExample(){
+    public function testExample()
+    {
         $this->markTestIncomplete('This test has not yet been implemented');
     }
-    
 }
