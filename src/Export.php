@@ -17,7 +17,7 @@ class Export extends Events
         foreach ($events as $i => $event) {
             $eventColors = $this->eventColors($event['type']);
             $array[$i]['id'] = intval($event['id']);
-            $array[$i]['title'] = $event['event'].($instructor === false ? ' - '.$this->event->getEventType($event['type']) : '');
+            $array[$i]['title'] = $event['event'].($instructor === false ? ' - '.$this->getEventType($event['type']) : '');
             $array[$i]['start'] = date('Y-m-d H:i', strtotime($event['start']));
             $array[$i]['end'] = date('Y-m-d H:i', strtotime($event['end']));
             $array[$i]['allDay'] = false;
@@ -45,8 +45,11 @@ class Export extends Events
         header('Content-disposition: attachment; filename='.$exportName.'.csv');
         
         $data = '';
-        foreach ($this->getEvents($userID, $type) as $event) {
-            $data.= strintf($event['event'], date('d/m/y', strtotime($event['start'])), date('H:i:s', strtotime($event['start'])), date('d/m/y', strtotime($event['end'])), date('H:i:s', strtotime($event['end'])), $this->getEventType(($event['type'] - 1)));
+        $events = $this->getEvents($userID, $type);
+        if (is_array($events)) {
+            foreach ($events as $event) {
+                $data.= strintf($event['event'], date('d/m/y', strtotime($event['start'])), date('H:i:s', strtotime($event['start'])), date('d/m/y', strtotime($event['end'])), date('H:i:s', strtotime($event['end'])), $this->getEventType(($event['type'] - 1)));
+            }
         }
         printr(file_get_contents('exports\csv_export.txt'), $data);
     }
@@ -62,8 +65,11 @@ class Export extends Events
         header("Content-type: text/calendar");
         header('Content-disposition: attachment; filename='.$exportName.'.ics');
         $data = '';
-        foreach ($this->getEvents($userID, $type) as $event) {
-            $data.= $this->iCalEvent($event);
+        $events = $this->getEvents($userID, $type);
+        if (is_array($events)) {
+            foreach ($events as $event) {
+                $data.= $this->iCalEvent($event);
+            }
         }
         printf(file_get_contents('exports\ical_export.txt'), 'Europe/London', $data);
     }
