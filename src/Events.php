@@ -178,6 +178,7 @@ class Events extends Pupils
      */
     public function getLessonEvents($fino = 0, $id = 0, $startdate = '', $enddate = '', $type = 0, $pupil = 0, $order = 'ASC')
     {
+        $where = [];
         if (!empty($fino) && is_numeric($fino)) {
             $where['fino'] = intval($fino);
         }
