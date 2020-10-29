@@ -17,7 +17,7 @@ class Events extends Pupils
      * Extra events to add for those instructors who are also tutors
      * @var array
      */
-    public $tutorevents = ['Part 2 Training', 'Part 3 Training', 'ORDIT Training'];
+    public $tutorevents = ['Part 2 Training', 'Part 3 Training', 'ORDIT Training', 'PDI Part 2 Test', 'PDI Part 3 Test'];
     
     /**
      * The database table where to store the events
@@ -40,7 +40,8 @@ class Events extends Pupils
         8 => ['background' => '#ff0099'/* Pink */],
         9 => ['background' => '#2C4B76'/* Dark Blue */],
         10 => ['background' => '#755E00'/* Dark Yellow */],
-        11 => ['background' => '#364800'/* Dark Green */]
+        11 => ['background' => '#364800'/* Dark Green */],
+        12 => ['background' => '#873232'/* Burnt Red */]
     ];
     
     /**
