@@ -153,7 +153,7 @@ class Events extends Pupils
     /**
      * Returns a users/instructors events for the given date if given else will return the current days events
      * @param int $fino This should be the instructors unique franchise number
-     * @param int $pupil
+     * @param int $pupil The is should be the pupils unique number
      * @param string $date If you want a sets days events set this to be Y-m-d format of date
      * @return array|false If any events exist they will be returned as an array else will return false if none exist
      */
@@ -162,7 +162,7 @@ class Events extends Pupils
         if (empty($date)) {
             $date = date('Y-m-d');
         }
-        return $this->db->query("SELECT * FROM `".$this->getEventsTable()."` WHERE `fino` = ? AND (`start` >= ? AND `end` <= ?) OR (`start` <= ? AND `end` >= ?) ORDER BY `start` ASC;", [$fino, $date.' 00:00:00', $date.' 24:00:00', $date.' 00:00:00', $date.' 00:00:01']);
+        return $this->db->query("SELECT * FROM `".$this->getEventsTable()."` WHERE `".($pupil > 0 ? 'pupil' : 'fino')."` = ? AND (`start` >= ? AND `end` <= ?) OR (`start` <= ? AND `end` >= ?) ORDER BY `start` ASC;", [($pupil > 0 ? $pupil : $fino), $date.' 00:00:00', $date.' 24:00:00', $date.' 00:00:00', $date.' 00:00:01']);
     }
     
     
@@ -180,6 +180,7 @@ class Events extends Pupils
     public function getLessonEvents($fino = 0, $id = 0, $startdate = '', $enddate = '', $type = 0, $pupil = 0, $order = 'ASC')
     {
         $where = [];
+        $limit = 0;
         if (!empty($fino) && is_numeric($fino)) {
             $where['fino'] = intval($fino);
         }
@@ -200,7 +201,7 @@ class Events extends Pupils
             $where['type'] = intval($type);
         }
         
-        $events = $this->db->selectAll($this->getEventsTable(), $where, '*', ['start' => $order], intval($limit));
+        $events = $this->db->selectAll($this->getEventsTable(), $where, '*', ['start' => $order], $limit);
         if ($limit == 1) {
             $events['typeName'] = $this->getEventType($events['type']);
         } elseif (is_array($events)) {
